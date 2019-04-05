@@ -107,7 +107,7 @@
         words_sum[words[i]] = 0;
         word_active[words[i]] = false;
       }
-      $.getJSON("DandiSpeechJson.json", function (data) {
+      $.getJSON("https://raw.githubusercontent.com/rajeshburla/dataVizA4/master/DandiSpeechJson.json", function (data) {
         console.log(data.length)
         var finalContent = "";
         data.forEach(function (d) {
@@ -122,7 +122,7 @@
         document.getElementById("speechJson").innerHTML = finalContent;
 
       })
-      $.getJSON("speech.json", function (data) {
+      d3.json("https://raw.githubusercontent.com/rajeshburla/dataVizA4/master/speech.json", function (data) {
         data.forEach(function (d) {
           chart_data.push(d);
           if (max_length < d["length"]) {
