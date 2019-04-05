@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<head>
+  <!-- Latest compiled and minified CSS-->
+
+  <!-- jQuery library-->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+  <!-- Latest compiled JavaScript-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/lodash/4/lodash.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h3 style="margin-top: 100px;" align="middle"> Salt March Visualization</h3>
+  <img src="dandi.png" class="center">
+  <hr class="hrDefined">
+  <h1 align='middle'>Content Analysis of Gandhi Speeches during salt march</h1>
+  <div class="header">
+    <div class="box">
+      <img src="tcd.jpg" style="position:  absolute; " width="220" height="60">
+
+      <!-- <img style="position:  absolute; float: right;" src="gandhiDandi.png"   width="150" height="60" > -->
+      <h5 style="text-align: center"><b><span style="font-family: algerian">CS7DS4 -</span> Data
+          Visualisation</b></h5>
+      <h3 style="text-align: center; font-weight: bold; color:black;"><span style="font-family: algerian">1930</span>
+        Salt March by Mahatma Gandhi in British India</h3>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar" id="myBar"></div>
+      <div class="header1" style="margin-top: 8px;">
+        Search:
+        <input type="search" placeholder="Independence">
+        <button data-search="next">&darr;</button>
+        <button data-search="prev">&uarr;</button>
+        <button data-search="clear">✖</button>
+      </div>
+    </div>
+  </div>
+  <div id="content">
+
+    <div id="left">
+
+      <div id="speechJson" class="speechClass" align="justify"></div>
+    </div>
+    <div id="right">
+      <div class="container">
+
+        <div class="post-preview">
+
+          <button class="text-words" style="background-color: #333333; opacity: 0.5;" id="Antyaja">Antyaja</button>
+          <button class="text-words" style="background-color: #05475c; opacity: 0.5;" id="British">British</button>
+          <button class="text-words" style="background-color: #fb8c00; opacity: 0.5;" id="Faith">Faith</button>
+          <button class="text-words" style="background-color: #cfcc14; opacity: 0.5;" id="God">God</button>
+          <button class="text-words" style="background-color: #303f9f; opacity: 0.5;"
+            id="Government">Government</button>
+          <button class="text-words" style="background-color: #8e24aa; opacity: 0.5;"
+            id="Independence">Independence</button>
+          <button class="text-words" style="background-color: #795548; opacity: 0.5;" id="Khadi">Khadi</button>
+          <button class="text-words" style="background-color: #333300; opacity: 0.5;" id="Poor">Poor</button>
+          <button class="text-words" style="background-color: #8bc34a; opacity: 0.5;" id="Salt">Salt</button>
+          <button class="text-words" style="background-color: #78909c; opacity: 0.5;" id="Unite">Unite</button>
+          <!--<button class="text-words" style="background-color: #e91e63; opacity: 0.5;" id="Woman">Woman</button>-->
+          <button class="text-words" style="background-color: #0ab9c5; opacity: 0.5;" id="Struggle">Struggle</button>
+          <button class="text-words" style="background-color: #6a1b9a; opacity: 0.5;" id="Swaraj">Swaraj</button>
+          <button class="text-words" style="background-color: #4caf50; opacity: 0.5;" id="Tax">Tax</button>
+          <button class="text-words" style="background-color: #607d8b; opacity: 0.5;" id="Unity">Unity</button>
+          <button class="text-words" style="background-color: #0a8661; opacity: 0.5;" id="Volunteer">Volunteer</button>
+          <button class="text-words" style="background-color: #d81b60; opacity: 0.5;" id="Women">Women</button>
+          <button class="text-words" style="background-color: #1e88e5; opacity: 0.5;" id="Resign">Resign</button>
+          <button class="text-words" style="background-color: #d32f2f; opacity: 0.5;"
+            id="Disobedience">Disobedience</button>
+
+        </div>
+      </div>
+      <div id="svgDiv" style="margin-top: 10px;"></div>
+    </div>
+  </div>
+  <script>
+
+
+    ($(document).ready(function () {
+
+      var chart_data = [];
+      var max_length = 0;
+
+      var words = ["Salt", "Independence", "Independent", "Struggle", "Faith", "Unity", "Unite", "Swaraj", "Tax", "Khadi", "Disobedience", "God", "Resign", "Volunteer",
+        "Women", "Woman", "Sister", "Government", "British", "Poor", "Antyaja"
+      ];
+
+      var words_color = ["#8bc34a", "#8e24aa", "#ba68c8", "#0ab9c5", "#fb8c00", "#607d8b", "#78909c", "#6a1b9a", "#4caf50", "#795548", "#d32f2f", "#cfcc14", "#1e88e5", "#0a8661",
+        "#d81b60", "#e91e63", "#f06292", "#303f9f", "#05475c", "#333300", "#333333"];
+
+      var words_sum = {};
+      var word_active = {};
+
+      for (var i = 0; i < words.length; i++) {
+        words_sum[words[i]] = 0;
+        word_active[words[i]] = false;
+      }
+      $.getJSON("DandiSpeechJson.json", function (data) {
+        console.log(data.length)
+        var finalContent = "";
+        data.forEach(function (d) {
+          var sp = ("<span class='speechTitle'> " + d.date + "  " + d.speech + " </span>"
+            + "<br>" + "<br>"
+            + "<span class='speechContent'> " + d.text + " </span>"
+            + "<br>"
+            + "<span class='speechSource'> " + d.source + " </span>"
+            + "<br><br>");
+          finalContent = finalContent + sp
+        })
+        document.getElementById("speechJson").innerHTML = finalContent;
+
+      })
+      $.getJSON("speech.json", function (data) {
+        data.forEach(function (d) {
+          chart_data.push(d);
+          if (max_length < d["length"]) {
+            max_length = d["length"];
+          }
+          for (var i = 0; i < words.length; i++) {
+            words_sum[words[i]] = words_sum[words[i]] + d[words[i]].length;
+          }
+          //console.log(d);
+        });
+        start();
+      });
+
+      function start() {
+        ////////
+        var margin = {
+          top: 40,
+          right: 25,
+          bottom: 0,
+          left: 25
+        },
+        width = 650
+        height = 800
+
+        var chart_dimension = {
+          width: 40,
+          height: 200,
+          left: 0,
+          top: 0,
+          color: "#C6D5CE"
+        };
+
+        var y = function (length, d) {
+          return (length / d['length']) * (d['length'] * chart_dimension.height / max_length);
+        }
+
+        var chart_length = function (d) {
+          return d['length'] * chart_dimension.height / max_length;
+        }
+
+        var svg = d3.select("#svgDiv")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")")
+          .style("text-align", "auto")
+          ;
+
+        var tip = d3.tip()
+          .attr('class', 'd3-tip')
+          .offset([-10, 0])
+          .html(function (word, d) {
+            //console.log();
+            return "<span style='color:#6E6E6E; font-weight:regular;'>" + d["name"] + "</span> <br/>"
+              + "<span style=' color:#6E6E6E; font-weight:regular; margin: 0px; padding:0px;'>" + d["date"] + "</span>"
+              + "<hr class ='newHr' style='margin:5px 0px -15px 0px; border:none; border-top: 1px solid #ccc;'>"
+              + "<span style='padding:0px; color:#ccc; font-weight:normal;'>Word: </span><span style='color:#FBB03B; padding:0px;'>" + word + " <br /> </span>"
+              + " <span style='color:#000; font-weight:regular;'>" + d[word].length + "</span>"
+              + "<span style='color:#6E6E6E; font-weight:regular;'> time(s) in speech <br /></span>"
+              + "<span style='color:#000; font-weight:regular;'> " + words_sum[word] + "</span>"
+              + "<span style='color:#6E6E6E; font-weight:regular;'> times across speeches" + "</span>";
+          })
+
+        svg.call(tip);
+
+        var xgap = 0; //change this variable;
+        var ygap = 0;
+
+        chart_data.forEach(function (d) {
+
+          svg.append("rect")
+            .attr("x", xgap)
+            .attr("y", ygap)
+            .attr("width", chart_dimension.width)
+            .attr("height", chart_dimension.height)
+            .attr("transform",
+              "translate(" + chart_dimension.left + "," + chart_dimension.top + ")")
+            //.attr("class", "chart")
+            .style("fill", "white");
+          svg.append("text")
+            .attr("x", xgap)
+            .attr("y", ygap - 8)
+            .attr("dy", "0")
+            .text(function (i) {
+              //console.log(d["name"]);
+              return d["date"];
+            })
+
+            .attr("font-size", "10");
+
+          svg.append("rect")
+            .attr("x", xgap)
+            .attr("y", ygap)
+            .attr("width", chart_dimension.width)
+            .attr("height", chart_length(d))
+            .attr("transform",
+              "translate(" + chart_dimension.left + "," + chart_dimension.top + ")")
+            .attr("class", "chart")
+            .style("fill", "#EFEFEF");
+
+          for (var i = 0; i < words.length; i++) {
+
+            for (var k = 0; k < d[words[i]].length; k++) {
+              svg.append("line")
+                .attr("x1", function () {
+                  return xgap;
+                }) // x position of the first end of the line
+                .attr("y1", function () {
+                  return y(d[words[i]][k], d) + ygap;
+                }) // y position of the first end of the line
+                .attr("x2", function () {
+                  return chart_dimension.width + xgap;
+                }) // x position of the second end of the line
+                .attr("y2", function () {
+                  return y(d[words[i]][k], d) + ygap;
+                })
+                .attr("class", function () {
+                  return words[i];
+                })
+                .style("stroke", function () {
+                  return words_color[i];
+                })
+                .style("opacity", 0.3)
+                .style("stroke-width", "2")
+                .style("cursor", "pointer")
+                .on("mouseover", function () {
+                  if (word_active[this.getAttribute('class')] == false) {
+                    d3.selectAll("." + this.getAttribute('class'))
+                      .transition()
+                      .duration(50)
+                      .style("stroke-width", "6")
+                      .style("opacity", 1)
+                      //.style("")
+                      ;
+                  }
+                  d3.selectAll("." + this.getAttribute('class')).moveToFront();
+                  //console.log(this.getAttribute('class'));
+                  tip.show(this.getAttribute('class'), d);
+                })
+
+                //.on('mouseover', )
+                .on("mouseout", function () {
+
+                  if (word_active[this.getAttribute('class')] == false) {
+                    d3.selectAll("." + this.getAttribute('class'))
+                      .transition()
+                      .duration(50)
+                      .style("stroke-width", "2")
+                      .style("opacity", 0.3)
+                      ;
+                  }
+
+                  tip.hide();
+                });
+
+
+            }
+          }
+
+          xgap = xgap + chart_dimension.width + 20;
+          if (xgap > width - margin.left - margin.right - 40) {
+            xgap = 0;
+            ygap = ygap + chart_dimension.height + 30;
+          }
+
+        });
+
+        d3.selection.prototype.moveToFront = function () {
+          return this.each(function () {
+            this.parentNode.appendChild(this);
+          });
+
+        };
+        ////////
+      }
+
+
+      $('.text-words').click(function () {
+        var id = $(this).attr('id');
+        if (word_active[id]) {
+          word_active[id] = false;
+          var col = $("#" + id).css("background-color", words_color[words.indexOf(id)]);
+          col = $("#" + id).css("opacity", 0.5);
+          col = $("#" + id).css("border", "");
+          d3.selectAll("." + id)
+            .transition()
+            .duration(50)
+            .style("stroke-width", "2")
+            .style("opacity", 0.3)
+            ;
+
+        } else {
+          word_active[id] = true;
+          var col = $("#" + id).css("background-color", words_color[words.indexOf(id)], "opacity", 1);
+          col = $("#" + id).css("opacity", 1);
+          col = $("#" + id).css("border", "3px solid yellow");
+          d3.selectAll("." + id)
+            .transition()
+            .duration(50)
+            .style("stroke-width", "6")
+            .style("opacity", 1)
+            //.style("")
+            ;
+        }
+        var highlight_word_active = word_active
+        var filtered = _.pickBy(highlight_word_active);
+        //console.log(_.keys(filtered));
+        $(".speechClass").unmark({
+          done: function () {
+            $(".speechClass").mark(_.keys(filtered));
+          }
+        });
+      });
+
+    }))
+    // When the user scrolls the page, execute myFunction 
+    window.onscroll = function () { myFunction() };
+
+    function myFunction() {
+      var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      var scrolled = (winScroll / height) * 100;
+      document.getElementById("myBar").style.width = scrolled + "%";
+    }
+    $(function () {
+
+      // the input field
+      var $input = $("input[type='search']"),
+        // clear button
+        $clearBtn = $("button[data-search='clear']"),
+        // prev button
+        $prevBtn = $("button[data-search='prev']"),
+        // next button
+        $nextBtn = $("button[data-search='next']"),
+        // the context where to search
+        $content = $(".speechClass"),
+        // jQuery object to save <mark> elements
+        $results,
+        // the class that will be appended to the current
+        // focused element
+        currentClass = "current",
+        // top offset for the jump (the search bar)
+        offsetTop = 150,
+        // the current index of the focused element
+        currentIndex = 0;
+
+      /**
+       * Jumps to the element matching the currentIndex
+       */
+      function jumpTo() {
+        if ($results.length) {
+          var position,
+            $current = $results.eq(currentIndex);
+          $results.removeClass(currentClass);
+          if ($current.length) {
+            $current.addClass(currentClass);
+            position = $current.offset().top - offsetTop;
+            window.scrollTo(0, position);
+          }
+        }
+      }
+
+      /**
+       * Searches for the entered keyword in the
+       * specified context on input
+       */
+      $input.on("input", function () {
+        var searchVal = this.value;
+        $content.unmark({
+          done: function () {
+            $content.mark(searchVal, {
+              separateWordSearch: true,
+              done: function () {
+                $results = $content.find("mark");
+                currentIndex = 0;
+                jumpTo();
+              }
+            });
+          }
+        });
+      });
+
+      /**
+       * Clears the search
+       */
+      $clearBtn.on("click", function () {
+        $content.unmark();
+        $input.val("").focus();
+      });
+
+      /**
+       * Next and previous search jump to
+       */
+      $nextBtn.add($prevBtn).on("click", function () {
+        if ($results.length) {
+          currentIndex += $(this).is($prevBtn) ? -1 : 1;
+          if (currentIndex < 0) {
+            currentIndex = $results.length - 1;
+          }
+          if (currentIndex > $results.length - 1) {
+            currentIndex = 0;
+          }
+          jumpTo();
+        }
+      });
+    });
+
+  </script>
+</body>
+
+</html>
