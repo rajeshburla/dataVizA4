@@ -202,3 +202,8 @@ hr.hrDefined {
   margin-right: auto;
   width: 50%;
 }
+.underline{
+  text-decoration: underline;
+  -webkit-text-decoration-color: orangered; /* Safari */  
+  text-decoration-color: orange;
+}
